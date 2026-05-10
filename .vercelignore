@@ -1,0 +1,10 @@
+node_modules
+.git
+.github
+.env
+.gitignore
+dist
+scripts
+eslint.config.mjs
+.stylelintrc.json
+dashboard.html
