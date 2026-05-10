@@ -16,7 +16,7 @@
         "lint:html": "htmlhint **/*.html",
         "dev": "npx esbuild js/*.js --bundle --outdir=dist --servedir=. --serve=8080",
         "build": "npx esbuild js/*.js --bundle --minify --outdir=dist",
-        "build:public": "npm run build && node scripts/build-public.js",
+        "build:public": "npm run build && node build.js",
         "vercel-build": "npm run build:public"
     },
     "dependencies": {
