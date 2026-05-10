@@ -1,5 +1,3 @@
 {
-  "buildCommand": "npm run build:public",
-  "outputDirectory": "public",
-  "framework": "static"
+  "buildCommand": "npm run build:public"
 }
