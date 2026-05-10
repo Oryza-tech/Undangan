@@ -319,8 +319,6 @@ export const guest = (() => {
     const pageLoaded = () => {
         lang.init();
         offline.init();
-        comment.init();
-            // comment.init();
         progress.init();
 
         config = storage('config');
@@ -341,8 +339,8 @@ export const guest = (() => {
         });
 
         if (!token || token.length <= 0) {
-            document.getElementById('comment')?.remove();
-            document.querySelector('a.nav-link[href="#comment"]')?.closest('li.nav-item')?.remove();
+            //document.getElementById('comment')?.remove();
+            //document.querySelector('a.nav-link[href="#comment"]')?.closest('li.nav-item')?.remove();
                 // Comment section removed
 
             vid.load();
