@@ -7,7 +7,7 @@ import { dto } from '../../connection/dto.js';
 import { lang } from '../../common/language.js';
 import { storage } from '../../common/storage.js';
 import { session } from '../../common/session.js';
-import { request, HTTP_GET, HTTP_POST, HTTP_DELETE, HTTP_PUT, HTTP_STATUS_CREATED } from '../../connection/request.js';
+import { request, HTTP_GET } from '../../connection/request.js';
 import { supabase } from '../../connection/supabase.js';
 
 export const comment = (() => {
@@ -205,11 +205,7 @@ export const comment = (() => {
             comments.innerHTML = card.renderLoading().repeat(pagination.getPer());
         }
 
-        return request(HTTP_GET, `/api/v2/comment?per=${pagination.getPer()}&next=${pagination.getNext()}&lang=${lang.getLanguage()}`)
-            .token(session.getToken())
-            .withCache(1000 * 30)
-            .withForceCache()
-            .send(dto.getCommentsResponseV2)
+        return supabase.getComments(pagination.getPer(), pagination.getNext())
             .then(async (res) => {
                 comments.setAttribute('data-loading', 'false');
 
@@ -217,17 +213,17 @@ export const comment = (() => {
                     await gif.remove(u);
                 }
 
-                if (res.data.lists.length === 0) {
+                if (res.lists.length === 0) {
                     comments.innerHTML = onNullComment();
                     return res;
                 }
 
                 const flatten = (ii) => ii.flatMap((i) => [i.uuid, ...flatten(i.comments)]);
-                lastRender.splice(0, lastRender.length, ...flatten(res.data.lists));
-                showHide.set('hidden', traverse(res.data.lists, showHide.get('hidden')));
+                lastRender.splice(0, lastRender.length, ...flatten(res.lists));
+                showHide.set('hidden', traverse(res.lists, showHide.get('hidden')));
 
-                let data = await card.renderContentMany(res.data.lists);
-                if (res.data.lists.length < pagination.getPer()) {
+                let data = await card.renderContentMany(res.lists);
+                if (res.lists.length < pagination.getPer()) {
                     data += onNullComment();
                 }
 
@@ -272,10 +268,7 @@ export const comment = (() => {
         const likes = like.getButtonLike(id);
         likes.disabled = true;
 
-        const status = await request(HTTP_DELETE, '/api/comment/' + owns.get(id))
-            .token(session.getToken())
-            .send(dto.statusResponse)
-            .then((res) => res.data.status);
+        const status = await supabase.deleteComment(owns.get(id));
 
         if (!status) {
             btn.restore();
@@ -349,11 +342,8 @@ export const comment = (() => {
 
         const btn = util.disableButton(button);
 
-        const status = await request(HTTP_PUT, `/api/comment/${owns.get(id)}?lang=${lang.getLanguage()}`)
-            .token(session.getToken())
-            .body(dto.updateCommentRequest(presence ? isPresent : null, gifIsOpen ? null : form.value, gifId))
-            .send(dto.statusResponse)
-            .then((res) => res.data.status);
+        const update = await supabase.updateComment(owns.get(id), presence ? isPresent : null, gifIsOpen ? null : form.value, gifId);
+        const status = !!update;
 
         if (form) {
             form.disabled = false;
@@ -490,16 +480,13 @@ export const comment = (() => {
             }
         }
 
-        const supabaseAction = supabase.insertAttendance({
-            nama: nameValue,
-            presensi: isPresence,
-            ucapan: gifIsOpen ? null : form.value
+        const response = await supabase.insertComment({
+            parent_id: id ?? null,
+            name: nameValue,
+            presence: isPresence,
+            comment: gifIsOpen ? null : form.value,
+            gif_id: gifId,
         });
-
-        const response = await request(HTTP_POST, `/api/comment?lang=${lang.getLanguage()}`)
-            .token(session.getToken())
-            .body(dto.postCommentRequest(id, nameValue, isPresence, gifIsOpen ? null : form.value, gifId))
-            .send(dto.getCommentResponse);
 
         if (name) {
             name.disabled = false;
@@ -523,13 +510,11 @@ export const comment = (() => {
 
         btn.restore();
 
-        if (!response || response.code !== HTTP_STATUS_CREATED) {
+        if (!response) {
             return;
         }
 
-        supabaseAction.catch((err) => console.error('[Supabase]', err.message));
-
-        owns.set(response.data.uuid, response.data.own);
+        owns.set(response.uuid, response.own);
 
         if (form) {
             form.value = null;
@@ -551,21 +536,21 @@ export const comment = (() => {
                 comments.lastElementChild.remove();
             }
 
-            response.data.is_parent = true;
-            response.data.is_admin = session.isAdmin();
-            comments.insertAdjacentHTML('afterbegin', await card.renderContentMany([response.data]));
+            response.is_parent = true;
+            response.is_admin = session.isAdmin();
+            comments.insertAdjacentHTML('afterbegin', await card.renderContentMany([response]));
             comments.scrollIntoView();
         }
 
         if (id) {
-            showHide.set('hidden', showHide.get('hidden').concat([dto.commentShowMore(response.data.uuid, true)]));
+            showHide.set('hidden', showHide.get('hidden').concat([dto.commentShowMore(response.uuid, true)]));
             showHide.set('show', showHide.get('show').concat([id]));
 
             removeInnerForm(id);
 
-            response.data.is_parent = false;
-            response.data.is_admin = session.isAdmin();
-            document.getElementById(`reply-content-${id}`).insertAdjacentHTML('beforeend', await card.renderContentSingle(response.data));
+            response.is_parent = false;
+            response.is_admin = session.isAdmin();
+            document.getElementById(`reply-content-${id}`).insertAdjacentHTML('beforeend', await card.renderContentSingle(response));
 
             const anchorTag = document.getElementById(`button-${id}`).querySelector('a');
             if (anchorTag) {
@@ -576,15 +561,15 @@ export const comment = (() => {
                 anchorTag.remove();
             }
 
-            const uuids = [response.data.uuid];
+            const uuids = [response.uuid];
             const readMoreElement = document.createRange().createContextualFragment(card.renderReadMore(id, anchorTag ? anchorTag.getAttribute('data-uuids').split(',').concat(uuids) : uuids));
 
             const buttonLike = like.getButtonLike(id);
             buttonLike.parentNode.insertBefore(readMoreElement, buttonLike);
         }
 
-        like.addListener(response.data.uuid);
-        lastRender.push(response.data.uuid);
+        like.addListener(response.uuid);
+        lastRender.push(response.uuid);
     };
 
     /**
