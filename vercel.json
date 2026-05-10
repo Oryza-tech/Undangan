@@ -1,1 +1,5 @@
-{}
+{
+  "buildCommand": "npm run build:public",
+  "outputDirectory": "public",
+  "framework": "static"
+}
