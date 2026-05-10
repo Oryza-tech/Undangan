@@ -25,7 +25,7 @@ export const card = (() => {
      */
     let showHide = null;
 
-    const maxCommentLength = 300;
+    // const maxCommentLength = 300; // Comment feature removed
 
     /**
      * @returns {string}
@@ -52,7 +52,7 @@ export const card = (() => {
      */
     const renderLike = (c) => {
         return `
-        <button style="font-size: 0.8rem;" onclick="undangan.comment.like.love(this)" data-uuid="${c.uuid}" class="btn btn-sm btn-outline-auto ms-auto rounded-3 p-0 shadow-sm d-flex justify-content-start align-items-center" data-offline-disabled="false">
+        <!-- Comment like button removed -->
             <span class="my-0 mx-1" data-count-like="${c.like_count}">${c.like_count}</span>
             <i class="me-1 ${likes.has(c.uuid) ? 'fa-solid fa-heart text-danger' : 'fa-regular fa-heart'}"></i>
         </button>`;
@@ -66,19 +66,19 @@ export const card = (() => {
         let action = `<div class="d-flex justify-content-start align-items-center" data-button-action="${c.uuid}">`;
 
         if (config.get('can_reply') !== false) {
-            action += `<button style="font-size: 0.8rem;" onclick="undangan.comment.reply('${c.uuid}')" class="btn btn-sm btn-outline-auto rounded-4 py-0 me-1 shadow-sm" data-offline-disabled="false">Reply</button>`;
+            // action += `<button ...>Reply</button>`; // Comment reply removed
         }
 
         if (session.isAdmin() && c.is_admin && (!c.gif_url || gif.isActive())) {
-            action += `<button style="font-size: 0.8rem;" onclick="undangan.comment.edit(this, ${c.is_parent ? 'true' : 'false'})" data-uuid="${c.uuid}" class="btn btn-sm btn-outline-auto rounded-4 py-0 me-1 shadow-sm" data-own="${c.own}" data-offline-disabled="false">Edit</button>`;
+            // action += `<button ...>Edit</button>`; // Comment edit removed
         } else if (owns.has(c.uuid) && config.get('can_edit') !== false && (!c.gif_url || gif.isActive())) {
-            action += `<button style="font-size: 0.8rem;" onclick="undangan.comment.edit(this, ${c.is_parent ? 'true' : 'false'})" data-uuid="${c.uuid}" class="btn btn-sm btn-outline-auto rounded-4 py-0 me-1 shadow-sm" data-offline-disabled="false">Edit</button>`;
+            // action += `<button ...>Edit</button>`; // Comment edit removed
         }
 
         if (session.isAdmin()) {
-            action += `<button style="font-size: 0.8rem;" onclick="undangan.comment.remove(this)" data-uuid="${c.uuid}" class="btn btn-sm btn-outline-auto rounded-4 py-0 me-1 shadow-sm" data-own="${c.own}" data-offline-disabled="false">Delete</button>`;
+            // action += `<button ...>Delete</button>`; // Comment delete removed
         } else if (owns.has(c.uuid) && config.get('can_delete') !== false) {
-            action += `<button style="font-size: 0.8rem;" onclick="undangan.comment.remove(this)" data-uuid="${c.uuid}" class="btn btn-sm btn-outline-auto rounded-4 py-0 me-1 shadow-sm" data-offline-disabled="false">Delete</button>`;
+            // action += `<button ...>Delete</button>`; // Comment delete removed
         }
 
         action += '</div>';
@@ -95,7 +95,7 @@ export const card = (() => {
         uuid = util.escapeHtml(uuid);
 
         const hasId = showHide.get('show').includes(uuid);
-        return `<a class="text-theme-auto" style="font-size: 0.8rem;" onclick="undangan.comment.showOrHide(this)" data-uuid="${uuid}" data-uuids="${util.escapeHtml(uuids.join(','))}" data-show="${hasId ? 'true' : 'false'}" role="button" class="me-auto ms-1 py-0">${hasId ? 'Hide replies' : `Show replies (${uuids.length})`}</a>`;
+        // return ...; // Comment show/hide replies removed
     };
 
     /**

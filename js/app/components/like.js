@@ -34,52 +34,16 @@ export const like = (() => {
             navigator.vibrate(100);
         }
 
-        if (likes.has(id)) {
-            await request(HTTP_PATCH, '/api/comment/' + likes.get(id))
-                .token(session.getToken())
-                .send(dto.statusResponse)
-                .then((res) => {
-                    if (res.data.status) {
-                        likes.unset(id);
-
-                        heart.classList.remove('fa-solid', 'text-danger');
-                        heart.classList.add('fa-regular');
-
-                        info.setAttribute('data-count-like', String(count - 1));
-                    }
-                })
-                .finally(() => {
-                    info.innerText = info.getAttribute('data-count-like');
-                    button.disabled = false;
-                });
-        } else {
-            await request(HTTP_POST, '/api/comment/' + id)
-                .token(session.getToken())
-                .send(dto.uuidResponse)
-                .then((res) => {
-                    if (res.code === HTTP_STATUS_CREATED) {
-                        likes.set(id, res.data.uuid);
-
-                        heart.classList.remove('fa-regular');
-                        heart.classList.add('fa-solid', 'text-danger');
-
-                        info.setAttribute('data-count-like', String(count + 1));
-                    }
-                })
-                .finally(() => {
-                    info.innerText = info.getAttribute('data-count-like');
-                    button.disabled = false;
-                });
-        }
+        // Comment like feature removed
     };
 
     /**
      * @param {string} uuid
      * @returns {HTMLElement|null}
      */
-    const getButtonLike = (uuid) => {
-        return document.querySelector(`button[onclick="undangan.comment.like.love(this)"][data-uuid="${uuid}"]`);
-    };
+    // const getButtonLike = (uuid) => {
+    //     return document.querySelector(`button[onclick=\"undangan.comment.like.love(this)\"][data-uuid=\"${uuid}\"]`);
+    // };
 
     /**
      * @param {HTMLElement} div

@@ -10,7 +10,7 @@ import { session } from '../../common/session.js';
 import { request, HTTP_GET } from '../../connection/request.js';
 import { supabase } from '../../connection/supabase.js';
 
-export const comment = (() => {
+// export const comment = (() => {
 
     /**
      * @type {ReturnType<typeof storage>|null}
